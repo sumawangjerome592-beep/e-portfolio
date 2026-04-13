@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jerome Sumawang · AI & Quiz</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI,system-ui,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    color:white;
+}
+
+.main{
+    width:1100px;
+    display:flex;
+    gap:25px;
+    flex-wrap:wrap;
+}
+
+
+.panel{
+    flex:1 1 450px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(18px);
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+
+h2{
+    margin-bottom:15px;
+    font-weight:600;
+}
+
+
+.chat-box{
+    background:rgba(255,255,255,.1);
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:15px;
+    min-height:120px;
+    display:flex;
+    align-items:center;
+}
+
+.answer{
+    font-size:1.2rem;
+}
+
+.query-btn{
+    width:100%;
+    margin:6px 0;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#ffffff20;
+    color:white;
+    font-weight:600;
+    transition:.2s;
+}
+
+.query-btn:hover{
+    background:#00c6ff;
+    transform:translateY(-2px);
+}
+
+.reset{
+    margin-top:10px;
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#ff7675;
+    color:white;
+}
+
+
+.quiz-header{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:15px;
+}
+
+.timer{
+    font-size:1.8rem;
+    font-weight:bold;
+}
+
+.score{
+    font-size:1.3rem;
+}
+
+.question{
+    font-size:1.3rem;
+    margin-bottom:15px;
+}
+
+.option{
+    background:#ffffff15;
+    padding:12px;
+    border-radius:10px;
+    margin:8px 0;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.option:hover{
+    background:#00c6ff;
+}
+
+.option.selected{
+    background:#00e676;
+    color:black;
+    font-weight:bold;
+}
+
+footer{
+    position:fixed;
+    bottom:10px;
+    opacity:.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="main">
+
+
+<div class="panel">
+<h2>💬 Scripted Assistant</h2>
+
+<div class="chat-box">
+<div id="answer" class="answer">Click a question 👇</div>
+</div>
+
+<button class="query-btn" data-q="1">💰 Tuition Fee?</button>
+<button class="query-btn" data-q="2">📚 Library Fee?</button>
+<button class="query-btn" data-q="3">🎓 Graduation Fee?</button>
+
+<button class="reset" id="reset">Reset</button>
+</div>
+
+
+<div class="panel">
+<h2>🧠 Quiz (10s per question)</h2>
+
+<div class="quiz-header">
+<div class="timer" id="timer">10</div>
+<div class="score" id="score">0 / 5</div>
+</div>
+
+<div id="question" class="question"></div>
+<div id="options"></div>
+
+</div>
+</div>
+
+<footer>📁 PTL4_01_SUMAWANG_M.</footer>
+
+<script>
+
+const answers={
+1:"₱20,000 per semester (tuition only).",
+2:"₱3,450 library and laboratory fee.",
+3:"₱1,850 graduation package fee."
+};
+
+document.querySelectorAll(".query-btn").forEach(btn=>{
+btn.onclick=()=>{
+document.getElementById("answer").innerText=
+answers[btn.dataset.q];
+};
+});
+
+document.getElementById("reset").onclick=()=>{
+document.getElementById("answer").innerText="Click a question 👇";
+};
+
+
+
+const quiz=[
+{
+q:"What does HTML stand for?",
+o:["Hyper Text Markup Language","High Text Machine Language","Home Tool Markup Language","Hyperlinks Text Management"],
+a:0
+},
+{
+q:"Which language is used for styling websites?",
+o:["HTML","Python","CSS","SQL"],
+a:2
+},
+{
+q:"Which company created JavaScript?",
+o:["Microsoft","Netscape","Google","Apple"],
+a:1
+},
+{
+q:"What does CPU stand for?",
+o:["Central Processing Unit","Computer Personal Unit","Control Processing User","Central Program Utility"],
+a:0
+},
+{
+q:"Which tag creates a hyperlink?",
+o:["<link>","<a>","<href>","<url>"],
+a:1
+}
+];
+
+let index=0;
+let score=0;
+let timer=10;
+let interval=null;
+
+const qEl=document.getElementById("question");
+const optEl=document.getElementById("options");
+const timerEl=document.getElementById("timer");
+const scoreEl=document.getElementById("score");
+
+function loadQuestion(){
+clearInterval(interval);
+timer=10;
+timerEl.innerText=timer;
+
+const q=quiz[index];
+qEl.innerText=q.q;
+
+optEl.innerHTML="";
+
+q.o.forEach((opt,i)=>{
+const div=document.createElement("div");
+div.className="option";
+div.innerText=opt;
+
+div.onclick=()=>{
+if(i===q.a) score++;
+nextQuestion();
+};
+
+optEl.appendChild(div);
+});
+
+interval=setInterval(()=>{
+timer--;
+timerEl.innerText=timer;
+
+if(timer<=0){
+nextQuestion();
+}
+},1000);
+}
+
+function nextQuestion(){
+clearInterval(interval);
+index++;
+
+if(index>=quiz.length){
+qEl.innerText="🎉 Quiz Finished!";
+optEl.innerHTML="";
+scoreEl.innerText=score+" / "+quiz.length;
+timerEl.innerText="0";
+return;
+}
+
+scoreEl.innerText=score+" / "+quiz.length;
+loadQuestion();
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
